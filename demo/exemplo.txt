@@ -1,0 +1,12 @@
+Arquivo de teste da toolbar.
+
+Selecione estas duas linhas com o mouse e clique em Editar → y - Copia.
+Sem seleção, o mesmo clique pergunta o alvo: a linha, a palavra, dentro das chaves...
+
+function exemplo(parametro)
+  local valor = { primeiro = "um", segundo = "dois" }
+  return valor[parametro]
+end
+
+    linha com indentação sobrando para testar << e >>
+palavra_em_minusculas para testar gU
