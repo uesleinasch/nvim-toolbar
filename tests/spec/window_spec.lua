@@ -1,8 +1,6 @@
 local window = require "nvim-toolbar.render.window"
 
-local function toolbar_lines()
-  return vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(window.win()), 0, -1, false)
-end
+local function toolbar_lines() return vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(window.win()), 0, -1, false) end
 
 describe("render/window", function()
   before_each(function()

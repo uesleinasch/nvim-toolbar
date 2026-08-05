@@ -25,7 +25,10 @@ local function dir_of(session) return BASE .. "/" .. session end
 function M.setup_files(session, lines, opts)
   local dir = dir_of(session)
   vim.fn.delete(dir, "rf")
-  vim.fn.mkdir(dir, "p")
+  -- os arquivos de spec rodam em paralelo e correm para criar o BASE
+  -- compartilhado: o mkdir("p") perdedor estoura E739
+  pcall(vim.fn.mkdir, dir, "p")
+  if vim.fn.isdirectory(dir) == 0 then vim.fn.mkdir(dir, "p") end
 
   local root = vim.fn.getcwd()
   opts = vim.tbl_extend("force", { echo = false, hover = false }, opts or {})
@@ -138,9 +141,7 @@ function M.start(session, lines, opts)
   return dir
 end
 
-function M.wait(session, signal, seconds)
-  sh(("timeout %d tmux wait-for %s-%s"):format(seconds or 15, signal, session))
-end
+function M.wait(session, signal, seconds) sh(("timeout %d tmux wait-for %s-%s"):format(seconds or 15, signal, session)) end
 
 function M.click(session, screenrow, screencol)
   local press = ("\27[<0;%d;%dM"):format(screencol, screenrow)

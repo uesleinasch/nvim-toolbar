@@ -13,7 +13,7 @@ describe("render", function()
     render.setup()
 
     assert.equals("tabline", render.name())
-    assert.is_truthy(vim.o.tabline:find("nvim%-toolbar"))
+    assert.is_truthy(vim.o.tabline:find "nvim%-toolbar")
   end)
 
   it("usa o renderer de janela quando a posicao pede", function()

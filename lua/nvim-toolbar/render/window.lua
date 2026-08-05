@@ -94,9 +94,7 @@ local function leave_bar()
   end
   for _, candidate in ipairs(vim.api.nvim_list_wins()) do
     local ok, config = pcall(vim.api.nvim_win_get_config, candidate)
-    if ok and config.relative == "" and candidate ~= win then
-      return vim.api.nvim_set_current_win(candidate)
-    end
+    if ok and config.relative == "" and candidate ~= win then return vim.api.nvim_set_current_win(candidate) end
   end
 end
 

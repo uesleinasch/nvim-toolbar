@@ -42,9 +42,9 @@ describe("actions.invoke", function()
     local buf = fresh_buffer { "modificado sem salvar" }
 
     local resolved
-    assert.has_no.errors(function()
-      resolved = actions.invoke { cmd = "bdelete", display = ":bd", label = "Fecha este arquivo" }
-    end)
+    assert.has_no.errors(
+      function() resolved = actions.invoke { cmd = "bdelete", display = ":bd", label = "Fecha este arquivo" } end
+    )
 
     assert.is_truthy(resolved.error and resolved.error:find("E89", 1, true))
     assert.is_nil(resolved.echo)

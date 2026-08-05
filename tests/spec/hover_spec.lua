@@ -18,9 +18,7 @@ describe("tabline.button_at", function()
     assert.is_nil(tabline.button_at(ultimo_grupo.col + ultimo_grupo.width + 2))
   end)
 
-  it("nao acha botao depois do fim da barra", function()
-    assert.is_nil(tabline.button_at(tabline.width() + 3))
-  end)
+  it("nao acha botao depois do fim da barra", function() assert.is_nil(tabline.button_at(tabline.width() + 3)) end)
 
   it("so reconhece o mouse na linha da tabline", function()
     local region = tabline.region(2)

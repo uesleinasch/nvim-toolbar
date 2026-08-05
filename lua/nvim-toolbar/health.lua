@@ -11,7 +11,7 @@ function M.report()
   if position ~= "tabline" and position ~= "window" then
     out[#out + 1] = {
       level = "error",
-      message = ("'position' = %q não existe: use \"tabline\" ou \"window\". A barra caiu em \"tabline\"."):format(
+      message = ('\'position\' = %q não existe: use "tabline" ou "window". A barra caiu em "tabline".'):format(
         tostring(position)
       ),
     }

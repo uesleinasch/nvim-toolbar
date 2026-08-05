@@ -108,7 +108,11 @@ function M.disable()
 end
 
 function M.toggle()
-  if enabled then M.disable() else M.enable() end
+  if enabled then
+    M.disable()
+  else
+    M.enable()
+  end
 end
 
 function M.is_enabled() return enabled end

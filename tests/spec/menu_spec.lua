@@ -3,9 +3,7 @@ local config = require "nvim-toolbar.config"
 
 local function flush() vim.api.nvim_feedkeys("", "x", false) end
 
-local function lines()
-  return vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(menu.win()), 0, -1, false)
-end
+local function lines() return vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(menu.win()), 0, -1, false) end
 
 local function index_of(keys)
   for i, item in ipairs(menu.items()) do
