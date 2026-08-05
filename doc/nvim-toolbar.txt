@@ -1,0 +1,131 @@
+*nvim-toolbar.txt*    Barra de ferramentas clicável que ensina o atalho
+
+Autor: Ueslei Nascimento
+Licença: MIT
+
+==============================================================================
+CONTEÚDO                                                *nvim-toolbar-contents*
+
+  1. Introdução ............................. |nvim-toolbar-introducao|
+  2. Requisitos ............................. |nvim-toolbar-requisitos|
+  3. Setup .................................. |nvim-toolbar-setup|
+  4. Opções ................................. |nvim-toolbar-opcoes|
+  5. Comandos ............................... |nvim-toolbar-comandos|
+  6. Destaques .............................. |nvim-toolbar-highlights|
+  7. Diagnóstico ............................ |nvim-toolbar-health|
+
+==============================================================================
+1. INTRODUÇÃO                                         *nvim-toolbar-introducao*
+
+Uma barra clicável, agrupada por intenção (Arquivo, Navegar, Selecionar,
+Editar, Texto, Buscar), que mostra o atalho real de cada ação e o ecoa depois
+de executar. Operadores (`y`, `d`, `c`, `gu`...) agem direto sobre a seleção
+visual; sem seleção, abrem um submenu de alvos com o atalho composto (`yiw`,
+`y$`, `yi{`).
+
+==============================================================================
+2. REQUISITOS                                         *nvim-toolbar-requisitos*
+
+- Neovim 0.10 ou mais novo.
+- 'mouse' habilitado: >lua
+    vim.o.mouse = "a"
+<
+- Para o destaque sob o mouse, 'mousemoveevent' (o plugin liga sozinho).
+
+==============================================================================
+3. SETUP                                                   *nvim-toolbar-setup*
+
+Com lazy.nvim: >lua
+    {
+      "uesleinasch/nvim-toolbar",
+      event = "VeryLazy",
+      opts = {},
+    }
+<
+Ou diretamente: >lua
+    require("nvim-toolbar").setup {
+      position = "tabline",
+      echo = true,
+      hover = true,
+      groups = nil,
+    }
+<
+Chamar `setup()` de novo reconfigura a barra (troca de `position`, etc.).
+
+==============================================================================
+4. OPÇÕES                                                 *nvim-toolbar-opcoes*
+
+position                                        *nvim-toolbar-opcoes-position*
+    `"tabline"` (padrão) desenha a barra na 'tabline'. `"window"` usa uma
+    janela dedicada de uma linha no topo, preservando a tabline de plugins
+    como heirline/bufferline. A janela migra junto quando você troca de
+    tabpage.
+
+echo                                                *nvim-toolbar-opcoes-echo*
+    `true` (padrão) ecoa o atalho executado (ex.: `yy → Copia a linha
+    inteira`) para ensinar a tecla.
+
+hover                                              *nvim-toolbar-opcoes-hover*
+    `true` (padrão) destaca o botão sob o ponteiro do mouse.
+
+groups                                            *nvim-toolbar-opcoes-groups*
+    `nil` (padrão) usa o catálogo embutido. Uma lista de grupos o substitui: >lua
+    require("nvim-toolbar").setup {
+      groups = {
+        {
+          id = "meu",
+          label = "Meu grupo",
+          items = {
+            { keys = "gg", label = "Início do arquivo" },
+            { cmd = "write", display = ":w", label = "Salva" },
+            { separator = true },
+            { keys = "y", label = "Copia", targets = "operator" },
+          },
+        },
+      },
+    }
+<
+    Cada item aceita: `keys` (teclas) ou `cmd` (comando Ex), `label`,
+    `display` (forma curta mostrada), `modes` (modos onde vale sem escape),
+    `pending` (deixa o comando aberto na cmdline), `targets` (abre submenu
+    de alvos) e `alias` (tecla equivalente mostrada no rótulo).
+
+==============================================================================
+5. COMANDOS                                             *nvim-toolbar-comandos*
+
+:ToolbarToggle                                                *:ToolbarToggle*
+    Liga ou desliga a barra.
+
+:ToolbarEnable                                                *:ToolbarEnable*
+    Liga a barra.
+
+:ToolbarDisable                                              *:ToolbarDisable*
+    Desliga a barra e restaura o que ela mudou (tabline, mapeamentos de
+    mouse, 'mousemoveevent').
+
+==============================================================================
+6. DESTAQUES                                          *nvim-toolbar-highlights*
+
+Todos nascem linkados ao tema (sem cor fixa) e podem ser sobrescritos depois
+do `setup()`:
+
+  ToolbarGroup          botão de grupo
+  ToolbarGroupOpen      grupo com menu aberto
+  ToolbarGroupHover     grupo sob o mouse
+  ToolbarAction         ação direta
+  ToolbarActionHover    ação sob o mouse
+  ToolbarSep            separador da barra
+  ToolbarFill           sobra da linha
+  ToolbarMenu           fundo do menu
+  ToolbarMenuBorder     borda do menu
+  ToolbarMenuSel        item selecionado do menu
+  ToolbarEcho           eco do atalho executado
+
+==============================================================================
+7. DIAGNÓSTICO                                            *nvim-toolbar-health*
+
+`:checkhealth nvim-toolbar` aponta: 'mouse' vazio, 'showtabline' em 0,
+tabline tomada por outro plugin, `position` inválida, terminal estreito
+demais e 'laststatus' que faz a barra em janela custar uma linha extra.
+
+vim:tw=78:ts=8:noet:ft=help:norl:

@@ -16,6 +16,12 @@ function M.current() return active end
 
 function M.setup()
   local wanted = config.options.position
+  if wanted and not MODULES[wanted] then
+    vim.notify(
+      ('nvim-toolbar: position %q não existe, usando "tabline" ("tabline" ou "window")'):format(wanted),
+      vim.log.levels.WARN
+    )
+  end
   active_name = MODULES[wanted] and wanted or "tabline"
   active = require(MODULES[active_name])
   active.setup()

@@ -9,4 +9,4 @@ test-mouse:
 		-c "PlenaryBustedDirectory tests/mouse { minimal_init = 'tests/minimal_init.lua', timeout = 60000 }"
 
 fmt:
-	stylua lua tests
+	stylua lua tests demo

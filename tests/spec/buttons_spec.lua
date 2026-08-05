@@ -39,6 +39,18 @@ describe("buttons.build", function()
     assert.equals(6, buttons.width(list))
   end)
 
+  it("usa os grupos da config quando o usuario os substitui", function()
+    local config = require "nvim-toolbar.config"
+    config.setup { groups = { { id = "meu", label = "Meu", items = { { keys = "p", label = "Cola" } } } } }
+
+    local list = buttons.build(200)
+
+    config.setup {}
+    assert.equals("group", list[1].kind)
+    assert.equals("meu", list[1].id)
+    assert.is_truthy(list[1].text:find("Meu", 1, true))
+  end)
+
   it("marca o separador para o renderer decidir como desenhar", function()
     local list = buttons.build(200)
 

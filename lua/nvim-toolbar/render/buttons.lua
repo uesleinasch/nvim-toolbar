@@ -1,4 +1,5 @@
 local catalog = require "nvim-toolbar.catalog"
+local config = require "nvim-toolbar.config"
 local model = require "nvim-toolbar.model"
 
 local M = {}
@@ -8,7 +9,7 @@ M.separator_text = " │ "
 local function compose(compact)
   local list = {}
 
-  for _, group in ipairs(catalog.groups) do
+  for _, group in ipairs(config.groups()) do
     local text = compact and (" " .. group.label .. " ") or (" " .. group.label .. " ▾")
     list[#list + 1] = { kind = "group", id = group.id, text = text }
   end

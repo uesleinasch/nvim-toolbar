@@ -38,6 +38,19 @@ describe("actions.invoke", function()
     assert.same({ "dois", "tres" }, vim.api.nvim_buf_get_lines(buf, 0, -1, false))
   end)
 
+  it("relata o erro do comando sem estourar e sem mentir no eco", function()
+    local buf = fresh_buffer { "modificado sem salvar" }
+
+    local resolved
+    assert.has_no.errors(function()
+      resolved = actions.invoke { cmd = "bdelete", display = ":bd", label = "Fecha este arquivo" }
+    end)
+
+    assert.is_truthy(resolved.error and resolved.error:find("E89", 1, true))
+    assert.is_nil(resolved.echo)
+    assert.is_true(vim.api.nvim_buf_is_valid(buf))
+  end)
+
   it("executa o item declarado como comando Ex", function()
     local buf = fresh_buffer { "um", "dois", "tres" }
 

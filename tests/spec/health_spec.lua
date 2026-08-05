@@ -38,6 +38,16 @@ describe("health.report na barra em janela", function()
 end)
 
 describe("health.report", function()
+  it("aponta position que nao existe em vez de silenciar", function()
+    config.setup { position = "flutuante" }
+
+    local erros = vim.tbl_filter(function(r) return r.level == "error" end, health.report())
+
+    config.setup()
+    local sobre = vim.tbl_filter(function(r) return r.message:find "position" ~= nil end, erros)
+    assert.is_true(#sobre > 0)
+  end)
+
   it("reclama do mouse desligado, que e o que impede qualquer clique", function()
     local anterior = vim.o.mouse
     vim.o.mouse = ""

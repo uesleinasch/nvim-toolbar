@@ -164,6 +164,15 @@ local function make_win()
   return win
 end
 
+-- a barra e uma so: quando o usuario troca de tabpage, ela migra junto em vez
+-- de ficar orfa na aba anterior
+local function ensure_tabpage()
+  if not (win and vim.api.nvim_win_is_valid(win)) then return end
+  if vim.api.nvim_win_get_tabpage(win) == vim.api.nvim_get_current_tabpage() then return end
+  vim.api.nvim_win_close(win, true)
+  win = nil
+end
+
 function M.setup()
   make_win()
   M.render {}
@@ -172,6 +181,7 @@ end
 
 function M.render(opts)
   opts = opts or {}
+  ensure_tabpage()
   make_win()
 
   targets, regions = {}, {}
@@ -240,8 +250,6 @@ function M.region(id) return regions[id] end
 function M.target(id) return targets[id] end
 
 function M.win() return win end
-
-function M.width() return win and vim.api.nvim_win_get_width(win) or 0 end
 
 function M.teardown()
   pcall(vim.api.nvim_del_augroup_by_name, "NvimToolbarFocus")

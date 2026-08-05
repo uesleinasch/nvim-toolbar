@@ -1,5 +1,6 @@
 local actions = require "nvim-toolbar.actions"
 local catalog = require "nvim-toolbar.catalog"
+local config = require "nvim-toolbar.config"
 local context = require "nvim-toolbar.context"
 local model = require "nvim-toolbar.model"
 
@@ -8,7 +9,7 @@ local M = {}
 local state = { win = nil, buf = nil, entries = {}, anchor = nil, open_group = nil }
 
 local function group_by_id(id)
-  for _, group in ipairs(catalog.groups) do
+  for _, group in ipairs(config.groups()) do
     if group.id == id then return group end
   end
 end
@@ -53,7 +54,18 @@ local function keymaps(buf)
   map("<LeftMouse>", function()
     local pos = vim.fn.getmousepos()
     if pos.winid == state.win and pos.line > 0 then return M.choose(pos.line) end
+
+    local open_group = state.open_group
     M.close()
+
+    -- clique que caiu na barra: repassa ao handler dela, senao trocar de grupo
+    -- exigiria dois cliques no renderer de janela (este mapping consome o press)
+    local render = require "nvim-toolbar.render"
+    local id = render.hit(pos)
+    if not id or not _G.NvimToolbarClick then return end
+    local target = render.target(id)
+    if target and target.kind == "group" and target.id == open_group then return end
+    vim.schedule(function() _G.NvimToolbarClick(id) end)
   end)
 end
 
@@ -92,11 +104,15 @@ local function draw(entries, anchor)
 
   if state.win and vim.api.nvim_win_is_valid(state.win) then
     vim.api.nvim_win_set_config(state.win, win_config)
+    if vim.api.nvim_win_get_buf(state.win) ~= buf then vim.api.nvim_win_set_buf(state.win, buf) end
   else
     state.win = vim.api.nvim_open_win(buf, true, win_config)
     vim.wo[state.win].winhighlight = "Normal:ToolbarMenu,FloatBorder:ToolbarMenuBorder,CursorLine:ToolbarMenuSel"
     vim.wo[state.win].cursorline = true
   end
+
+  -- o clique pode vir do Insert; os keymaps do menu so existem em modo Normal
+  vim.cmd "stopinsert"
 
   state.buf = buf
   state.entries = entries

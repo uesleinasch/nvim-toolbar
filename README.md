@@ -29,13 +29,13 @@ Com [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-  "nvim-toolbar",
+  "uesleinasch/nvim-toolbar",
   event = "VeryLazy",
   opts = {},
 }
 ```
 
-Requer Neovim 0.11 ou mais novo e `mouse` habilitado (`vim.o.mouse = "a"`).
+Requer Neovim 0.10 ou mais novo e `mouse` habilitado (`vim.o.mouse = "a"`).
 
 ## Configuração
 
@@ -49,9 +49,10 @@ require("nvim-toolbar").setup {
 ```
 
 Comandos: `:ToolbarToggle`, `:ToolbarEnable`, `:ToolbarDisable`.
+Ajuda: `:help nvim-toolbar` — inclui o formato dos itens para `groups` customizados.
 Diagnóstico: `:checkhealth nvim-toolbar` — aponta `mouse` vazio, `showtabline` em 0,
-tabline tomada por outro plugin, terminal estreito demais e `laststatus` que faz a
-barra custar uma linha extra.
+tabline tomada por outro plugin, `position` inválida, terminal estreito demais e
+`laststatus` que faz a barra custar uma linha extra.
 
 ## Onde a barra mora: `tabline` ou `window`
 
@@ -68,6 +69,10 @@ empilhadas por uma linha — statusline com `laststatus < 3`, `WinSeparator` com
 é pintada com a cor da barra, então lê como a borda inferior dela. Com
 `laststatus = 3` (o padrão do AstroNvim) fica mais discreta, e o healthcheck avisa
 quando não está.
+
+A barra em janela é uma só: ao trocar de tabpage, ela migra junto. E quando o `:q`
+fecha a última janela de código, a barra encerra junto — a sessão não fica presa
+com uma barra órfã.
 
 ## Convivência com AstroNvim, heirline e bufferline
 
@@ -127,16 +132,20 @@ O modelo não sabe desenhar, o renderer não sabe executar, o executor não sabe
 | Módulo | Responsabilidade |
 |---|---|
 | `catalog.lua` | Os grupos, itens e conjuntos de alvo. Dados puros. |
+| `config.lua` | Defaults, `setup(opts)` e o acesso aos grupos efetivos. |
 | `model.lua` | Resolve o item no modo atual: ação direta ou lista de alvos. |
 | `context.lua` | Janela alvo e modo de quem acionou a barra. |
 | `exec.lua` | Decide o plano (`gv`, `<Esc>`, teclas ou comando Ex) e o envia. |
 | `actions.lua` | Orquestra resolver → restaurar contexto → executar → ecoar. |
+| `echo.lua` | Monta a mensagem que ensina o atalho executado. |
 | `menu.lua` | Dropdown e submenu em janela flutuante. |
 | `render/buttons.lua` | Quais botões existem e seus rótulos, incluindo o modo compacto. |
 | `render/init.lua` | Escolhe o renderer conforme `position`. |
 | `render/tabline.lua` | Tabline com ids clicáveis via `%N@handler@`. |
 | `render/window.lua` | Janela de uma linha no topo, com highlights por extmark. |
 | `hover.lua` | Destaque do botão sob o mouse, delegando o hit-test ao renderer. |
+| `highlights.lua` | Grupos de destaque linkados ao tema. |
+| `health.lua` | O `:checkhealth nvim-toolbar`. |
 
 As ações são enviadas com `nvim_feedkeys`, não com a API de buffer, para preservar
 registradores, contadores, `.` e blocos de undo exatamente como o atalho digitado —
@@ -146,8 +155,12 @@ se o efeito divergisse do atalho ensinado, o eco seria uma mentira.
 
 ```sh
 make test        # unidade e integração, headless
-make test-mouse  # cliques de mouse reais, dentro do tmux
+make test-mouse  # cliques de mouse reais, dentro do tmux (requer tmux instalado)
 ```
+
+Os testes usam [plenary.nvim](https://github.com/nvim-lua/plenary.nvim): se não for
+encontrado no caminho do lazy.nvim, é clonado automaticamente em `.tests/`. Para
+apontar outra cópia, use `PLENARY_DIR=/caminho make test`.
 
 `make test-mouse` sobe um Neovim no tmux e injeta sequências SGR de mouse. Esse
 caminho existe porque `nvim_input_mouse` exige UI atachada e um Neovim não sustenta ser
@@ -170,3 +183,7 @@ Três bugs que só esse teste pegou, e que passariam por qualquer suíte headles
 - Contagem de uso com sugestão de "graduar" para o teclado.
 - Ícones nerdfont por item.
 - Integração como provider do heirline.
+
+## Licença
+
+[MIT](LICENSE).

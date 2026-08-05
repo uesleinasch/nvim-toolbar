@@ -48,6 +48,24 @@ describe("exec.plan", function()
     assert.equals("write", plan.cmd)
     assert.is_nil(plan.keys)
   end)
+
+  it("sai do Insert por padrao mesmo sem modes declarado", function()
+    local plan = exec.plan({ kind = "action", keys = "u" }, { mode = "i" })
+
+    assert.equals("<Esc>u", plan.keys)
+  end)
+
+  it("sai do terminal com o atalho proprio dele", function()
+    local plan = exec.plan({ kind = "action", keys = "u" }, { mode = "t" })
+
+    assert.equals([[<C-\><C-n>u]], plan.keys)
+  end)
+
+  it("continua sem prefixo no visual quando o item nao declara modes", function()
+    local plan = exec.plan({ kind = "action", keys = "gg" }, { mode = "V" })
+
+    assert.equals("gg", plan.keys)
+  end)
 end)
 
 describe("exec.run", function()
@@ -91,5 +109,15 @@ describe("exec.run", function()
 
     assert.same({ "dois" }, vim.api.nvim_buf_get_lines(buf, 0, -1, false))
     assert.equals("n", vim.fn.mode(1))
+  end)
+
+  it("devolve o erro do Vim limpo em vez de estourar quando o comando falha", function()
+    fresh_buffer { "modificado sem salvar" }
+
+    local plan
+    assert.has_no.errors(function() plan = exec.run { kind = "action", cmd = "bdelete" } end)
+
+    assert.is_truthy(plan.error)
+    assert.is_truthy(plan.error:find("E89", 1, true))
   end)
 end)

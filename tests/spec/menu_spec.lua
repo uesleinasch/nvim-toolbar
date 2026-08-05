@@ -131,6 +131,29 @@ describe("menu", function()
     assert.equals(0, avisos)
   end)
 
+  it("fecha o menu mesmo quando o comando do item falha", function()
+    fresh_buffer { "modificado sem salvar" }
+    menu.open({ kind = "group", id = "file" }, { col = 0 })
+
+    local indice
+    for i, item in ipairs(menu.items()) do
+      if item.cmd == "bdelete" then indice = i end
+    end
+
+    assert.has_no.errors(function() menu.choose(indice) end)
+    assert.is_false(menu.is_open())
+  end)
+
+  it("abre o grupo substituto quando a config troca o catalogo", function()
+    config.setup { echo = false, groups = { { id = "meu", label = "Meu", items = { { keys = "p", label = "Cola" } } } } }
+
+    menu.open({ kind = "group", id = "meu" }, { col = 0 })
+
+    local aberto = menu.is_open()
+    config.setup { echo = false }
+    assert.is_true(aberto)
+  end)
+
   it("executa a acao direta da barra sem abrir menu nenhum", function()
     local buf = fresh_buffer { "um", "dois", "tres" }
     vim.api.nvim_feedkeys("dd", "x", false)

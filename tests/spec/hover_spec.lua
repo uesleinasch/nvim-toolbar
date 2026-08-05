@@ -99,6 +99,43 @@ describe("hover no renderer de janela", function()
   end)
 end)
 
+describe("hover.setup e teardown", function()
+  before_each(function() config.setup {} end)
+
+  it("teardown remove o MouseMove e devolve a option como estava", function()
+    local antes = vim.o.mousemoveevent
+
+    hover.setup()
+    assert.is_true(vim.o.mousemoveevent)
+    assert.is_true(vim.fn.maparg("<MouseMove>", "n") ~= "")
+
+    hover.teardown()
+
+    assert.equals(antes, vim.o.mousemoveevent)
+    assert.equals("", vim.fn.maparg("<MouseMove>", "n"))
+  end)
+
+  it("devolve o MouseMove que o usuario ja tinha", function()
+    vim.keymap.set("n", "<MouseMove>", "<Nop>", { desc = "do usuario" })
+
+    hover.setup()
+    hover.teardown()
+
+    local mapa = vim.fn.maparg("<MouseMove>", "n", false, true)
+    pcall(vim.keymap.del, "n", "<MouseMove>")
+    assert.equals("do usuario", mapa.desc)
+  end)
+
+  it("nao instala nada quando hover esta desligado na config", function()
+    config.setup { hover = false }
+
+    hover.setup()
+
+    assert.equals("", vim.fn.maparg("<MouseMove>", "n"))
+    hover.teardown()
+  end)
+end)
+
 describe("tabline.build com hover", function()
   it("destaca o botao sob o mouse", function()
     local bar = tabline.build { hover = 2 }

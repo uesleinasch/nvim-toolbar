@@ -5,19 +5,29 @@ local M = {}
 
 function M.report()
   local out = {}
-  local in_window = config.options.position == "window"
+  local position = config.options.position
+  local in_window = position == "window"
+
+  if position ~= "tabline" and position ~= "window" then
+    out[#out + 1] = {
+      level = "error",
+      message = ("'position' = %q não existe: use \"tabline\" ou \"window\". A barra caiu em \"tabline\"."):format(
+        tostring(position)
+      ),
+    }
+  end
 
   if vim.o.mouse == "" then
     out[#out + 1] = {
       level = "error",
-      message = "'mouse' esta vazio: nenhum clique chega na toolbar. Use vim.o.mouse = 'a'.",
+      message = "'mouse' está vazio: nenhum clique chega na toolbar. Use vim.o.mouse = 'a'.",
     }
   end
 
   if not in_window and vim.o.showtabline == 0 then
     out[#out + 1] = {
       level = "error",
-      message = "'showtabline' esta 0: a barra nunca aparece. O setup() do plugin ajusta para 2.",
+      message = "'showtabline' está 0: a barra nunca aparece. O setup() do plugin ajusta para 2.",
     }
   end
 
@@ -28,7 +38,7 @@ function M.report()
       message = ("terminal com %d colunas: a barra precisa de %d colunas mesmo compacta, "):format(
         vim.o.columns,
         minimum
-      ) .. "os ultimos botoes ficam cortados.",
+      ) .. "os últimos botões ficam cortados.",
     }
   end
 
@@ -36,7 +46,7 @@ function M.report()
     if vim.o.laststatus ~= 3 then
       out[#out + 1] = {
         level = "warn",
-        message = ("'laststatus' esta %d: com statusline por janela, a barra ganha uma linha "):format(
+        message = ("'laststatus' está %d: com statusline por janela, a barra ganha uma linha "):format(
           vim.o.laststatus
         ) .. "separadora e passa a custar duas linhas. Use vim.o.laststatus = 3.",
       }
@@ -44,7 +54,7 @@ function M.report()
   elseif not vim.o.tabline:find "nvim%-toolbar" then
     out[#out + 1] = {
       level = "warn",
-      message = "a tabline atual nao e do nvim-toolbar: outro plugin (heirline, bufferline) a tomou. "
+      message = "a tabline atual não é do nvim-toolbar: outro plugin (heirline, bufferline) a tomou. "
         .. "Chame require('nvim-toolbar').setup() depois dele.",
     }
   end
@@ -52,7 +62,7 @@ function M.report()
   if not vim.o.mousemoveevent then
     out[#out + 1] = {
       level = "info",
-      message = "'mousemoveevent' desligado: o destaque do botao sob o mouse fica indisponivel.",
+      message = "'mousemoveevent' desligado: o destaque do botão sob o mouse fica indisponível.",
     }
   end
 

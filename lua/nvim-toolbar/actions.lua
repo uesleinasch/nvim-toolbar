@@ -11,7 +11,13 @@ function M.invoke(item)
   if resolved.kind == "targets" then return resolved end
 
   context.restore()
-  exec.run(resolved)
+  local plan = exec.run(resolved)
+
+  if plan.error then
+    resolved.error = plan.error
+    vim.api.nvim_echo({ { plan.error, "ErrorMsg" } }, true, {})
+    return resolved
+  end
 
   resolved.echo = echo.message(item)
   if config.options.echo then vim.api.nvim_echo({ { resolved.echo, "ToolbarEcho" } }, false, {}) end

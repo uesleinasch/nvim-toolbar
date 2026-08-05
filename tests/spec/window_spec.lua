@@ -247,4 +247,13 @@ describe("render/window", function()
 
     assert.is_true(window.win() ~= nil and vim.api.nvim_win_is_valid(window.win()))
   end)
+
+  it("migra para a tabpage atual em vez de ficar orfa na anterior", function()
+    window.setup()
+    vim.cmd "tabnew"
+
+    window.render {}
+
+    assert.equals(vim.api.nvim_get_current_tabpage(), vim.api.nvim_win_get_tabpage(window.win()))
+  end)
 end)

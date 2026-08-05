@@ -65,6 +65,38 @@ describe("toolbar.setup", function()
 
     assert.is_true(next(hl) ~= nil)
   end)
+
+  it("setup de novo reconfigura de verdade em vez de ignorar", function()
+    local render = require "nvim-toolbar.render"
+
+    toolbar.setup { echo = false, position = "tabline" }
+    toolbar.setup { echo = false, position = "window" }
+
+    local nome = render.name()
+    toolbar.disable()
+    assert.equals("window", nome)
+  end)
+
+  it("desligar limpa os autocmds da barra", function()
+    toolbar.setup { echo = false }
+    assert.is_true(#vim.api.nvim_get_autocmds { group = "NvimToolbar" } > 0)
+
+    toolbar.disable()
+
+    local ok = pcall(vim.api.nvim_get_autocmds, { group = "NvimToolbar" })
+    assert.is_false(ok, "o augroup deveria ter sido removido")
+  end)
+
+  it("devolve o clique de mouse que o usuario ja tinha ao desligar", function()
+    vim.keymap.set("n", "<LeftMouse>", "<Nop>", { desc = "clique do usuario" })
+
+    toolbar.setup { echo = false, position = "window" }
+    toolbar.disable()
+
+    local mapa = vim.fn.maparg("<LeftMouse>", "n", false, true)
+    pcall(vim.keymap.del, "n", "<LeftMouse>")
+    assert.equals("clique do usuario", mapa.desc)
+  end)
 end)
 
 describe("clique na barra", function()

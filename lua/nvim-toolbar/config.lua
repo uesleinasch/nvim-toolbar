@@ -14,4 +14,8 @@ function M.setup(opts)
   return M.options
 end
 
+function M.groups()
+  return M.options.groups or require("nvim-toolbar.catalog").groups
+end
+
 return M
