@@ -1,6 +1,11 @@
 # Changelog
 
-## [Não lançado]
+## [0.1.0] — 2026-08-05
+
+Primeira versão pública: barra clicável com 6 grupos por intenção e 5 ações
+diretas, menu de alvos para operadores, eco pedagógico do atalho executado,
+renderers de `tabline` e de janela dedicada, hover, `:checkhealth`, vimdoc e
+suíte de testes com cliques de mouse reais.
 
 ### Adicionado
 
