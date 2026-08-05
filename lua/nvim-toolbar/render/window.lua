@@ -20,12 +20,15 @@ local regions = {}
 local saved_winbar = nil
 local augroup = nil
 
--- identifica pelo filetype, e nao por comparar com `win`: no WinNew da propria
--- barra a variavel `win` ainda nao foi atribuida
+-- janela de codigo: buffer de arquivo (buftype vazio ou help), nem flutuante,
+-- nem sidebar (neo-tree e afins tem buftype nofile), nem a propria barra —
+-- identificada pelo filetype porque no WinNew dela `win` ainda nao foi atribuida
 local function is_normal_win(candidate)
   local ok, config = pcall(vim.api.nvim_win_get_config, candidate)
   if not ok or config.relative ~= "" then return false end
   local candidate_buf = vim.api.nvim_win_get_buf(candidate)
+  local buftype = vim.bo[candidate_buf].buftype
+  if buftype ~= "" and buftype ~= "help" then return false end
   return vim.bo[candidate_buf].filetype ~= "nvimtoolbar"
 end
 
@@ -88,6 +91,12 @@ local function leave_bar()
   if not win or vim.api.nvim_get_current_win() ~= win then return end
   for _, candidate in ipairs(vim.api.nvim_list_wins()) do
     if is_normal_win(candidate) then return vim.api.nvim_set_current_win(candidate) end
+  end
+  for _, candidate in ipairs(vim.api.nvim_list_wins()) do
+    local ok, config = pcall(vim.api.nvim_win_get_config, candidate)
+    if ok and config.relative == "" and candidate ~= win then
+      return vim.api.nvim_set_current_win(candidate)
+    end
   end
 end
 
@@ -193,16 +202,31 @@ local function defer_to_vimenter()
   })
 end
 
+local function has_code_win()
+  for _, candidate in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if is_normal_win(candidate) then return true end
+  end
+  return false
+end
+
 function M.setup()
   if starting() then return defer_to_vimenter() end
 
-  make_win()
   M.render {}
   return win
 end
 
 function M.render(opts)
   if starting() then return defer_to_vimenter() end
+
+  -- sem janela de codigo na tabpage a barra nao tem o que comandar e herdaria
+  -- o espaco da janela fechada; some e volta sozinha (WinNew -> refresh)
+  -- quando um arquivo reaparecer
+  if not has_code_win() then
+    if win and vim.api.nvim_win_is_valid(win) then pcall(vim.api.nvim_win_close, win, true) end
+    win = nil
+    return
+  end
 
   opts = opts or {}
   ensure_tabpage()

@@ -35,3 +35,7 @@
 - A criação da barra durante o startup é adiada para depois do `VimEnter`,
   evitando o split fantasma que o Neovim abre quando a primeira janela tem
   `winfixbuf`.
+- Sidebars (neo-tree e afins, `buftype=nofile`) não contam mais como janela de
+  código: `:q` na última janela de arquivo com a tree aberta fecha a barra em
+  vez de deixá-la herdar o espaço inteiro, e o guard de foco não devolve mais
+  o cursor para a sidebar. A barra volta sozinha quando um arquivo reaparece.

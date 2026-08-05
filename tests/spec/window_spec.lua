@@ -265,6 +265,22 @@ describe("render/window", function()
     assert.is_true(window.win() ~= nil and vim.api.nvim_win_is_valid(window.win()))
   end)
 
+  it("some quando so resta uma sidebar e volta quando o codigo reaparece", function()
+    window.setup()
+    local codigo = vim.api.nvim_get_current_win()
+    vim.cmd "vsplit"
+    local sidebar = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(sidebar, vim.api.nvim_create_buf(false, true))
+    vim.api.nvim_win_close(codigo, true)
+
+    window.render {}
+    assert.is_nil(window.win(), "sem janela de codigo, a barra deveria fechar em vez de herdar o espaco")
+
+    vim.cmd "vnew"
+    window.render {}
+    assert.is_true(window.win() ~= nil and vim.api.nvim_win_is_valid(window.win()))
+  end)
+
   it("migra para a tabpage atual em vez de ficar orfa na anterior", function()
     window.setup()
     vim.cmd "tabnew"

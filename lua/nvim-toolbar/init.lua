@@ -87,7 +87,7 @@ function M.enable()
   if render.name() == "window" then install_mouse() end
 
   local group = vim.api.nvim_create_augroup("NvimToolbar", { clear = true })
-  vim.api.nvim_create_autocmd({ "VimResized", "TabEnter" }, {
+  vim.api.nvim_create_autocmd({ "VimResized", "TabEnter", "WinNew", "WinClosed" }, {
     group = group,
     callback = function() vim.schedule(M.refresh) end,
   })

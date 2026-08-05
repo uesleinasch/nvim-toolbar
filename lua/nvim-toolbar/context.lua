@@ -2,11 +2,15 @@ local M = {}
 
 local state = { win = nil, mode = "n" }
 
--- alvo valido e a janela onde o usuario edita: nem flutuante (menu) nem a barra
+-- alvo valido e a janela onde o usuario edita: nem flutuante (menu), nem a
+-- barra, nem sidebars como neo-tree (buftype nofile)
 local function is_target(win)
   local ok, config = pcall(vim.api.nvim_win_get_config, win)
   if not ok or config.relative ~= "" then return false end
-  return vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "nvimtoolbar"
+  local buf = vim.api.nvim_win_get_buf(win)
+  local buftype = vim.bo[buf].buftype
+  if buftype ~= "" and buftype ~= "help" then return false end
+  return vim.bo[buf].filetype ~= "nvimtoolbar"
 end
 
 function M.reset() state = { win = nil, mode = "n" } end
