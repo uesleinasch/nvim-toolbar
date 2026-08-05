@@ -1,5 +1,5 @@
 local config = require "nvim-toolbar.config"
-local tabline = require "nvim-toolbar.render.tabline"
+local render = require "nvim-toolbar.render"
 
 local M = {}
 
@@ -9,19 +9,8 @@ function M.reset() current = nil end
 
 function M.current() return current end
 
-function M.button_at(screencol)
-  local col = screencol - 1
-  local id = 1
-  while true do
-    local region = tabline.region(id)
-    if not region then return nil end
-    if col >= region.col and col < region.col + region.width then return id end
-    id = id + 1
-  end
-end
-
 function M.handle(pos)
-  local id = pos.screenrow == 1 and M.button_at(pos.screencol) or nil
+  local id = render.hit(pos)
 
   if id ~= current then
     current = id
@@ -36,7 +25,10 @@ function M.setup()
 
   vim.o.mousemoveevent = true
   vim.keymap.set({ "n", "v", "i" }, "<MouseMove>", function()
-    M.handle(vim.fn.getmousepos())
+    local pos = vim.fn.getmousepos()
+    -- expr mapping proibe alterar texto ou janela (E565), e o renderer de janela
+    -- redesenha escrevendo num buffer: o redesenho vai para o proximo tick
+    vim.schedule(function() M.handle(pos) end)
     return ""
   end, { expr = true, silent = true, desc = "nvim-toolbar: destaque sob o mouse" })
 end

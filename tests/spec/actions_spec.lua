@@ -38,6 +38,15 @@ describe("actions.invoke", function()
     assert.same({ "dois", "tres" }, vim.api.nvim_buf_get_lines(buf, 0, -1, false))
   end)
 
+  it("executa o item declarado como comando Ex", function()
+    local buf = fresh_buffer { "um", "dois", "tres" }
+
+    actions.invoke { cmd = "2delete", display = ":2d", label = "Recorta a linha 2" }
+    flush()
+
+    assert.same({ "um", "tres" }, vim.api.nvim_buf_get_lines(buf, 0, -1, false))
+  end)
+
   it("devolve os alvos em vez de executar quando o operador precisa de um", function()
     fresh_buffer { "um", "dois" }
 

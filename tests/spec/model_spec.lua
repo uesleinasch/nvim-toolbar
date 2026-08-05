@@ -29,4 +29,22 @@ describe("model.resolve", function()
     assert.equals("p", resolved.keys)
     assert.is_falsy(resolved.on_selection)
   end)
+
+  it("leva o comando Ex junto para quem executa", function()
+    local item = { cmd = "write", display = ":w", label = "Salva este arquivo" }
+
+    local resolved = model.resolve(item, "n")
+
+    assert.equals("action", resolved.kind)
+    assert.equals("write", resolved.cmd)
+  end)
+
+  it("preserva pending e modes declarados no item", function()
+    local item = { keys = ":", label = "Vai para a linha...", pending = true, modes = { "n" } }
+
+    local resolved = model.resolve(item, "n")
+
+    assert.is_true(resolved.pending)
+    assert.same({ "n" }, resolved.modes)
+  end)
 end)

@@ -38,6 +38,21 @@ describe("context", function()
     vim.api.nvim_win_close(float, true)
   end)
 
+  it("nunca elege a propria barra como janela alvo", function()
+    local codigo = vim.api.nvim_get_current_win()
+    context.capture()
+    local barra_buf = vim.api.nvim_create_buf(false, true)
+    vim.bo[barra_buf].filetype = "nvimtoolbar"
+    vim.cmd "topleft split"
+    local barra = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(barra, barra_buf)
+
+    context.capture()
+
+    assert.equals(codigo, context.state().win)
+    vim.api.nvim_win_close(barra, true)
+  end)
+
   it("devolve o foco para a janela alvo", function()
     local user_win = vim.api.nvim_get_current_win()
     context.capture()

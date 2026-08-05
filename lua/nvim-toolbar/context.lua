@@ -2,9 +2,11 @@ local M = {}
 
 local state = { win = nil, mode = "n" }
 
-local function is_float(win)
+-- alvo valido e a janela onde o usuario edita: nem flutuante (menu) nem a barra
+local function is_target(win)
   local ok, config = pcall(vim.api.nvim_win_get_config, win)
-  return ok and config.relative ~= ""
+  if not ok or config.relative ~= "" then return false end
+  return vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "nvimtoolbar"
 end
 
 function M.reset() state = { win = nil, mode = "n" } end
@@ -13,8 +15,10 @@ function M.state() return state end
 
 function M.capture()
   local win = vim.api.nvim_get_current_win()
-  if not is_float(win) then state.win = win end
-  state.mode = vim.fn.mode(1)
+  if is_target(win) then
+    state.win = win
+    state.mode = vim.fn.mode(1)
+  end
   return state
 end
 

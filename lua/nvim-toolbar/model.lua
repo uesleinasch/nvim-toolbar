@@ -37,7 +37,15 @@ function M.resolve(item, mode)
     return { kind = "targets", item = item, items = items }
   end
 
-  return { kind = "action", keys = item.keys, label = item.label, on_selection = visual or nil }
+  return {
+    kind = "action",
+    cmd = item.cmd,
+    keys = item.keys,
+    label = item.label,
+    pending = item.pending,
+    modes = item.modes,
+    on_selection = visual or nil,
+  }
 end
 
 return M

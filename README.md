@@ -41,7 +41,7 @@ Requer Neovim 0.11 ou mais novo e `mouse` habilitado (`vim.o.mouse = "a"`).
 
 ```lua
 require("nvim-toolbar").setup {
-  position = "tabline", -- onde a barra é desenhada
+  position = "tabline", -- "tabline" ou "window"
   echo = true,          -- ecoar o atalho executado
   hover = true,         -- destacar o botão sob o mouse
   groups = nil,         -- nil usa o catálogo padrão; uma tabela o substitui
@@ -49,27 +49,54 @@ require("nvim-toolbar").setup {
 ```
 
 Comandos: `:ToolbarToggle`, `:ToolbarEnable`, `:ToolbarDisable`.
-Diagnóstico: `:checkhealth nvim-toolbar` — aponta `mouse` vazio, `showtabline` em 0 e
-tabline tomada por outro plugin.
+Diagnóstico: `:checkhealth nvim-toolbar` — aponta `mouse` vazio, `showtabline` em 0,
+tabline tomada por outro plugin, terminal estreito demais e `laststatus` que faz a
+barra custar uma linha extra.
+
+## Onde a barra mora: `tabline` ou `window`
+
+| | `position = "tabline"` | `position = "window"` |
+|---|---|---|
+| Linhas de tela | **1** | **2** (a barra e o separador de janelas) |
+| Abas de buffer | substituídas pela barra | **preservadas** |
+| Breadcrumbs (winbar) | preservados | preservados (migram para window-local) |
+| Layout de janelas | intocado | ganha uma janela no topo |
+| Clique | não mexe no foco | não mexe no foco (mappings globais de mouse) |
+
+A segunda linha do modo `window` é inevitável: o Neovim sempre separa janelas
+empilhadas por uma linha — statusline com `laststatus < 3`, `WinSeparator` com `3`. Ela
+é pintada com a cor da barra, então lê como a borda inferior dela. Com
+`laststatus = 3` (o padrão do AstroNvim) fica mais discreta, e o healthcheck avisa
+quando não está.
 
 ## Convivência com AstroNvim, heirline e bufferline
 
-A barra ocupa a `tabline`, que nessas configurações costuma mostrar as **abas de
-buffer**. Quem escreve em `vim.o.tabline` por último ganha, então chame o `setup()`
-depois do plugin de statusline:
+Nessas configurações a `tabline` já mostra as **abas de buffer** e a `winbar` os
+breadcrumbs do LSP.
+
+**Para manter as abas de buffer**, use a barra em janela:
 
 ```lua
 {
-  "nvim-toolbar",
-  dependencies = { "rebelot/heirline.nvim" },
-  opts = {},
+  "uesleinasch/nvim-toolbar",
+  event = "VeryLazy",
+  opts = { position = "window" },
 }
 ```
 
-Você perde as abas de buffer, mas não a navegação: o grupo **Arquivo** tem
-`:bn` próximo arquivo, `:bp` anterior e `:bd` fecha. Se preferir manter as abas, o
-renderer de janela dedicada (`position = "window"`) resolve o conflito — ainda não
-implementado, veja abaixo.
+**Para a barra na tabline**, quem escreve em `vim.o.tabline` por último ganha, então
+carregue depois do plugin de statusline:
+
+```lua
+{
+  "uesleinasch/nvim-toolbar",
+  dependencies = { "rebelot/heirline.nvim" },
+  opts = { position = "tabline" },
+}
+```
+
+Aí você perde as abas, mas não a navegação: o grupo **Arquivo** tem `:bn` próximo
+arquivo, `:bp` anterior e `:bd` fecha.
 
 ## Aparência
 
@@ -105,8 +132,11 @@ O modelo não sabe desenhar, o renderer não sabe executar, o executor não sabe
 | `exec.lua` | Decide o plano (`gv`, `<Esc>`, teclas ou comando Ex) e o envia. |
 | `actions.lua` | Orquestra resolver → restaurar contexto → executar → ecoar. |
 | `menu.lua` | Dropdown e submenu em janela flutuante. |
-| `render/tabline.lua` | Monta a tabline com os ids clicáveis e mede as colunas. |
-| `hover.lua` | Destaque do botão sob o mouse. |
+| `render/buttons.lua` | Quais botões existem e seus rótulos, incluindo o modo compacto. |
+| `render/init.lua` | Escolhe o renderer conforme `position`. |
+| `render/tabline.lua` | Tabline com ids clicáveis via `%N@handler@`. |
+| `render/window.lua` | Janela de uma linha no topo, com highlights por extmark. |
+| `hover.lua` | Destaque do botão sob o mouse, delegando o hit-test ao renderer. |
 
 As ações são enviadas com `nvim_feedkeys`, não com a API de buffer, para preservar
 registradores, contadores, `.` e blocos de undo exatamente como o atalho digitado —
@@ -122,12 +152,21 @@ make test-mouse  # cliques de mouse reais, dentro do tmux
 `make test-mouse` sobe um Neovim no tmux e injeta sequências SGR de mouse. Esse
 caminho existe porque `nvim_input_mouse` exige UI atachada e um Neovim não sustenta ser
 UI de outro (o canal RPC morre no `nvim_ui_attach`), e porque `nvim -l` não roda o loop
-de input. Foi esse teste que pegou o bug em que o *release* do clique de abertura era
-herdado pelo menu, escolhendo o primeiro item sozinho.
+de input.
+
+Três bugs que só esse teste pegou, e que passariam por qualquer suíte headless:
+
+- O *release* do clique que abre o menu era herdado pelo menu recém-aberto, que
+  escolhia o primeiro item sozinho. Daí o menu tratar `<LeftMouse>` e não
+  `<LeftRelease>`.
+- Com `winfixbuf` na janela da barra, um clique fazia o Neovim **abrir uma segunda
+  janela** em vez de reusar a existente.
+- O Neovim foca a barra ao terminar de iniciar (ela é a primeira janela do layout), e
+  isso não passa por `WinEnter` — o guard de foco precisou escutar `VimEnter`/`UIEnter`.
 
 ## Ainda não implementado
 
-- `position = "window"` e `position = "float"` (a interface do renderer está pronta).
+- `position = "float"` (a interface do renderer está pronta).
 - Contagem de uso com sugestão de "graduar" para o teclado.
 - Ícones nerdfont por item.
 - Integração como provider do heirline.

@@ -1,40 +1,44 @@
+local config = require "nvim-toolbar.config"
 local hover = require "nvim-toolbar.hover"
+local render = require "nvim-toolbar.render"
 local tabline = require "nvim-toolbar.render.tabline"
 
-describe("hover.button_at", function()
-  before_each(function()
-    tabline.build()
-    hover.reset()
-  end)
+describe("tabline.button_at", function()
+  before_each(function() tabline.build() end)
 
   it("acha o botao pela coluna onde o mouse esta", function()
     local region = tabline.region(2)
 
-    local id = hover.button_at(region.col + 2)
-
-    assert.equals(2, id)
+    assert.equals(2, tabline.button_at(region.col + 2))
   end)
 
   it("nao acha botao no vao entre os grupos e as acoes diretas", function()
     local ultimo_grupo = tabline.region(6)
 
-    local id = hover.button_at(ultimo_grupo.col + ultimo_grupo.width + 2)
-
-    assert.is_nil(id)
+    assert.is_nil(tabline.button_at(ultimo_grupo.col + ultimo_grupo.width + 2))
   end)
 
   it("nao acha botao depois do fim da barra", function()
-    local id = hover.button_at(tabline.width() + 3)
+    assert.is_nil(tabline.button_at(tabline.width() + 3))
+  end)
 
-    assert.is_nil(id)
+  it("so reconhece o mouse na linha da tabline", function()
+    local region = tabline.region(2)
+
+    assert.equals(2, tabline.hit { screenrow = 1, screencol = region.col + 2 })
+    assert.is_nil(tabline.hit { screenrow = 7, screencol = region.col + 2 })
   end)
 end)
 
 describe("hover.handle", function()
   before_each(function()
+    config.setup {}
+    render.setup()
     tabline.build()
     hover.reset()
   end)
+
+  after_each(function() render.teardown() end)
 
   it("marca o botao quando o mouse esta na linha da barra", function()
     local region = tabline.region(3)
@@ -64,6 +68,34 @@ describe("hover.handle", function()
 
     hover.on_change = nil
     assert.equals(1, avisos)
+  end)
+end)
+
+describe("hover no renderer de janela", function()
+  before_each(function()
+    config.setup { position = "window" }
+    render.setup()
+    hover.reset()
+  end)
+
+  after_each(function() render.teardown() end)
+
+  it("marca o botao pela janela da barra, nao pela linha da tela", function()
+    local window = render.current()
+    local region = window.region(2)
+
+    hover.handle { winid = window.win(), wincol = region.col + 1, screenrow = 1 }
+
+    assert.equals(2, hover.current())
+  end)
+
+  it("limpa a marca quando o mouse esta em outra janela", function()
+    local window = render.current()
+    hover.handle { winid = window.win(), wincol = window.region(2).col + 1, screenrow = 1 }
+
+    hover.handle { winid = vim.api.nvim_get_current_win(), wincol = 3, screenrow = 5 }
+
+    assert.is_nil(hover.current())
   end)
 end)
 
