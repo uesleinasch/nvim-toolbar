@@ -1,0 +1,60 @@
+name: Reportar bug
+description: Algo não funciona como deveria
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Antes de abrir, rode `:checkhealth nvim-toolbar` —
+        muitos problemas de clique/aparência são apontados ali.
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que aconteceu
+      description: Descreva o comportamento observado e o esperado.
+      placeholder: "Cliquei em X e aconteceu Y; eu esperava Z."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Como reproduzir
+      description: |
+        Passos mínimos. Se possível, confirme se acontece também no sandbox
+        (sem a sua config): `nvim -u demo/init.lua demo/exemplo.txt`
+      placeholder: |
+        1. Abrir o nvim com ...
+        2. Clicar em ...
+        3. Ver o erro ...
+    validations:
+      required: true
+  - type: dropdown
+    id: position
+    attributes:
+      label: position
+      options:
+        - tabline
+        - window
+        - ambas / não sei
+    validations:
+      required: true
+  - type: input
+    id: nvim
+    attributes:
+      label: Versão do Neovim
+      description: Saída de `nvim --version | head -1`
+      placeholder: NVIM v0.11.0
+    validations:
+      required: true
+  - type: textarea
+    id: health
+    attributes:
+      label: ":checkhealth nvim-toolbar"
+      description: Cole a saída do healthcheck.
+      render: text
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto extra
+      description: Distro/config (AstroNvim, LazyVim...), plugins de UI (heirline, bufferline, neo-tree), terminal.

@@ -1,0 +1,24 @@
+name: Sugerir melhoria
+description: Uma ideia para a toolbar
+title: "[Ideia] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qual problema isso resolve
+      description: Descreva a situação de uso antes da solução — o que hoje é difícil ou impossível.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: O que você propõe
+      description: Como a melhoria funcionaria. Exemplos de uso ajudam muito.
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+      description: Já dá para conseguir isso de outro jeito (mapping, outro plugin, config)?

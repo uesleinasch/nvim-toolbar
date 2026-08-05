@@ -1,5 +1,9 @@
 # nvim-toolbar
 
+[![CI](https://github.com/uesleinasch/nvim-toolbar/actions/workflows/ci.yml/badge.svg)](https://github.com/uesleinasch/nvim-toolbar/actions/workflows/ci.yml)
+[![Neovim](https://img.shields.io/badge/Neovim-0.10%2B-57A143?logo=neovim&logoColor=white)](https://neovim.io)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
+
 Uma barra de ferramentas clicável para o Neovim, agrupada por intenção como no Word ou
 no VSCode — e que **ensina o atalho enquanto é usada**.
 
@@ -22,6 +26,20 @@ resolve isso pelo contexto:
   Cada opção mostra o atalho composto (`yiw`, `y$`, `yi{`).
 
 É a gramática operador + alvo do Vim, visível e clicável em vez de decorada.
+
+## O que vem dentro
+
+- **6 grupos por intenção** — Arquivo, Navegar, Selecionar, Editar, Texto, Buscar —
+  e 5 ações diretas (desfazer, refazer, salvar, ESC, sair), tudo com o atalho real
+  no rótulo.
+- **Eco pedagógico**: cada ação executada mostra a tecla que a produziu.
+- **Duas moradas**: na `tabline` (1 linha) ou em janela dedicada (preserva as abas
+  de buffer do heirline/bufferline).
+- **Consciente de contexto**: age na seleção visual quando ela existe, sai do modo
+  Insert antes de comandos de modo Normal, respeita `winfixbuf`, não rouba cliques
+  da tabline nem some quando você troca de tabpage.
+- **Catálogo substituível** (`groups`), destaques ligados ao seu tema, modo compacto
+  automático em terminal estreito, `:checkhealth` e `:help nvim-toolbar`.
 
 ## Instalação
 
@@ -177,12 +195,40 @@ Três bugs que só esse teste pegou, e que passariam por qualquer suíte headles
 - O Neovim foca a barra ao terminar de iniciar (ela é a primeira janela do layout), e
   isso não passa por `WinEnter` — o guard de foco precisou escutar `VimEnter`/`UIEnter`.
 
+## Perguntas frequentes
+
+**Cliquei e nada aconteceu.**
+`vim.o.mouse` precisa estar habilitado (`"a"`). Rode `:checkhealth nvim-toolbar` —
+ele aponta essa e as outras causas comuns.
+
+**Minhas abas de buffer sumiram.**
+Com `position = "tabline"` a barra ocupa a tabline. Use `position = "window"` para
+manter as abas do heirline/bufferline (veja a tabela acima).
+
+**A barra some quando fecho o último arquivo com a árvore de arquivos aberta.**
+É intencional: sem janela de código a barra não tem o que comandar, então sai do
+caminho e volta sozinha quando um arquivo reaparece.
+
+**Quero outros botões.**
+Passe `groups` no `setup()` com o seu catálogo — o formato dos itens está em
+`:help nvim-toolbar-opcoes-groups`.
+
+**Funciona no meu Neovim?**
+0.10 ou mais novo. O `setup()` avisa se a versão for mais antiga.
+
 ## Ainda não implementado
 
 - `position = "float"` (a interface do renderer está pronta).
 - Contagem de uso com sugestão de "graduar" para o teclado.
 - Ícones nerdfont por item.
 - Integração como provider do heirline.
+
+## Contribuindo
+
+Issues e PRs são bem-vindos — o [CONTRIBUTING.md](CONTRIBUTING.md) tem o setup,
+como rodar os testes (`make test` e `make test-mouse`) e o que um PR precisa.
+Bugs de clique/foco/janela quase sempre pedem um teste no harness de mouse real
+(`tests/mouse/`), que roda dentro do tmux.
 
 ## Licença
 
