@@ -101,10 +101,20 @@ describe("render/window", function()
     assert.equals("%f", restaurado)
   end)
 
-  it("nao usa winfixbuf, que faz o clique abrir uma janela fantasma", function()
+  it("usa winfixbuf para plugins nao abrirem arquivos dentro da barra", function()
     window.setup()
 
-    assert.is_false(vim.wo[window.win()].winfixbuf)
+    assert.is_true(vim.wo[window.win()].winfixbuf)
+  end)
+
+  it("nao aceita trocar o buffer da janela da barra", function()
+    window.setup()
+    local outro = vim.api.nvim_create_buf(false, true)
+
+    local ok = pcall(vim.api.nvim_win_set_buf, window.win(), outro)
+
+    vim.api.nvim_buf_delete(outro, { force = true })
+    assert.is_false(ok, "a janela da barra aceitou outro buffer")
   end)
 
   it("devolve o foco ao codigo se alguem entrar na barra", function()

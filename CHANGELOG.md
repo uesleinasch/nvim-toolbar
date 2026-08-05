@@ -28,3 +28,10 @@
 - Itens de comando (`:w`, `:bn`, ...) não estouram mais erro de `keys` nulo.
 - Trocar de grupo com o menu aberto no renderer de janela leva um clique, não
   dois.
+- Clique nas abas da tabline (heirline, tabpages) não é mais tratado como
+  clique na toolbar (filtro de `winrow` no hit-test da barra em janela).
+- Abrir arquivo pelo neo-tree (ou qualquer plugin que procure "uma janela
+  qualquer") não sequestra mais a janela da barra: ela agora usa `winfixbuf`.
+- A criação da barra durante o startup é adiada para depois do `VimEnter`,
+  evitando o split fantasma que o Neovim abre quando a primeira janela tem
+  `winfixbuf`.

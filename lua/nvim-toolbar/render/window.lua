@@ -151,10 +151,9 @@ local function make_win()
   -- da barra, ele le como a borda inferior dela
   wo.winhighlight = "Normal:ToolbarFill,EndOfBuffer:ToolbarFill,WinSeparator:ToolbarSep"
 
-  -- winfixbuf esta fora de proposito: com ele, um clique na barra faz o Neovim
-  -- abrir uma segunda janela em vez de reusar esta. O guard de foco abaixo
-  -- protege a barra sem esse efeito.
-  wo.winfixbuf = false
+  -- plugins que procuram "uma janela qualquer" para abrir arquivo (neo-tree,
+  -- pickers) respeitam winfixbuf; sem ele, o arquivo abre dentro da barra
+  wo.winfixbuf = true
 
   -- o height do open_win nem sempre e respeitado na criacao do split
   vim.api.nvim_win_set_height(win, 1)
@@ -173,13 +172,38 @@ local function ensure_tabpage()
   win = nil
 end
 
+-- criar a barra durante o startup de um Neovim com UI duplica a janela: o fim
+-- do startup nao pode editar o buffer inicial numa janela winfixbuf e abre um
+-- split fantasma. Criada depois do VimEnter, a disputa nao existe. Headless
+-- (uis == 0, ex.: testes via -c) nao passa por essa fase de edicao.
+local function starting() return vim.v.vim_did_enter == 0 and #vim.api.nvim_list_uis() > 0 end
+
+local deferred = false
+
+local function defer_to_vimenter()
+  if deferred then return end
+  deferred = true
+  vim.api.nvim_create_autocmd("VimEnter", {
+    group = vim.api.nvim_create_augroup("NvimToolbarWindowSetup", { clear = true }),
+    once = true,
+    callback = function()
+      deferred = false
+      M.render {}
+    end,
+  })
+end
+
 function M.setup()
+  if starting() then return defer_to_vimenter() end
+
   make_win()
   M.render {}
   return win
 end
 
 function M.render(opts)
+  if starting() then return defer_to_vimenter() end
+
   opts = opts or {}
   ensure_tabpage()
   make_win()
@@ -256,6 +280,7 @@ function M.win() return win end
 
 function M.teardown()
   pcall(vim.api.nvim_del_augroup_by_name, "NvimToolbarFocus")
+  pcall(vim.api.nvim_del_augroup_by_name, "NvimToolbarWindowSetup")
   if win and vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
   if buf and vim.api.nvim_buf_is_valid(buf) then vim.api.nvim_buf_delete(buf, { force = true }) end
   win, buf, targets, regions = nil, nil, {}, {}
