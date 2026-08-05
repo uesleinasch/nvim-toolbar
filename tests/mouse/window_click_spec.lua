@@ -96,6 +96,36 @@ describe("clique de mouse na barra em janela dedicada", function()
     assert.equals("linha um\nlinha dois\n", harness.read(SESSION, "step2").register)
   end)
 
+  -- Clique na tabline chega com o winid da barra (primeira janela do layout) e
+  -- winrow 0: sem o filtro de winrow no hit, clicar numa aba viraria clique na
+  -- toolbar e a aba nunca receberia o clique.
+  it("nao rouba o clique da tabline desenhada acima da barra", function()
+    harness.start(
+      SESSION,
+      { "linha um", "linha dois" },
+      { position = "window", echo = false, hover = false, showtabline = 2 }
+    )
+    harness.wait(SESSION, "ready")
+    local regions = harness.read(SESSION, "regions")
+    local arquivo = harness.region(regions, "file")
+    local editar = harness.region(regions, "edit")
+
+    local barra = harness.locate(SESSION, "Arquivo")
+    assert.equals(2, barra.row, "com showtabline=2 a barra deveria descer para a linha 2")
+
+    -- clique na tabline (linha 1), na coluna do botao Arquivo: nao pode abrir menu
+    harness.click(SESSION, 1, arquivo.col + 2)
+    vim.wait(1000)
+
+    -- o primeiro menu a abrir deve ser o do clique de verdade na barra (linha 2)
+    harness.click(SESSION, 2, editar.col + 2)
+    harness.wait(SESSION, "step1")
+
+    local snap = harness.read(SESSION, "step1")
+    assert.is_true(snap.menu_open)
+    assert.equals("edit", snap.group, "o clique na tabline abriu menu como se fosse na barra")
+  end)
+
   it("desenha a barra na primeira linha da tela", function()
     harness.start(SESSION, { "linha um" }, WINDOW)
     harness.wait(SESSION, "ready")

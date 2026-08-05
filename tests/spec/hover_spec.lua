@@ -84,16 +84,24 @@ describe("hover no renderer de janela", function()
     local window = render.current()
     local region = window.region(2)
 
-    hover.handle { winid = window.win(), wincol = region.col + 1, screenrow = 1 }
+    hover.handle { winid = window.win(), winrow = 1, wincol = region.col + 1, screenrow = 1 }
 
     assert.equals(2, hover.current())
   end)
 
   it("limpa a marca quando o mouse esta em outra janela", function()
     local window = render.current()
-    hover.handle { winid = window.win(), wincol = window.region(2).col + 1, screenrow = 1 }
+    hover.handle { winid = window.win(), winrow = 1, wincol = window.region(2).col + 1, screenrow = 1 }
 
-    hover.handle { winid = vim.api.nvim_get_current_win(), wincol = 3, screenrow = 5 }
+    hover.handle { winid = vim.api.nvim_get_current_win(), winrow = 3, wincol = 3, screenrow = 5 }
+
+    assert.is_nil(hover.current())
+  end)
+
+  it("nao marca botao quando o mouse esta na tabline acima da barra", function()
+    local window = render.current()
+
+    hover.handle { winid = window.win(), winrow = 0, wincol = window.region(2).col + 1, screenrow = 1 }
 
     assert.is_nil(hover.current())
   end)

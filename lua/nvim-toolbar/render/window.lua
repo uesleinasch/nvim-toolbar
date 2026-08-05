@@ -240,8 +240,11 @@ function M.button_at(wincol)
   return nil
 end
 
+-- clique na tabline chega com winid da barra (primeira janela do layout) e
+-- winrow = 0: sem exigir winrow 1, a aba clicada viraria botao da toolbar
 function M.hit(pos)
   if not win or pos.winid ~= win then return nil end
+  if pos.winrow ~= 1 then return nil end
   return M.button_at(pos.wincol)
 end
 

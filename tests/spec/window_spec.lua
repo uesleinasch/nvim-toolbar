@@ -181,8 +181,15 @@ describe("render/window", function()
     window.render {}
     local outra = vim.api.nvim_get_current_win()
 
-    assert.equals(1, window.hit { winid = window.win(), wincol = window.region(1).col + 1 })
-    assert.is_nil(window.hit { winid = outra, wincol = 1 })
+    assert.equals(1, window.hit { winid = window.win(), winrow = 1, wincol = window.region(1).col + 1 })
+    assert.is_nil(window.hit { winid = outra, winrow = 1, wincol = 1 })
+  end)
+
+  it("ignora o clique na tabline, que chega com o winid da barra e winrow 0", function()
+    window.setup()
+    window.render {}
+
+    assert.is_nil(window.hit { winid = window.win(), winrow = 0, wincol = window.region(1).col + 1 })
   end)
 
   it("resolve o id do clique para o grupo do catalogo", function()

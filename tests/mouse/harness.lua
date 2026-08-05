@@ -29,11 +29,14 @@ function M.setup_files(session, lines, opts)
 
   local root = vim.fn.getcwd()
   opts = vim.tbl_extend("force", { echo = false, hover = false }, opts or {})
+  local showtabline = opts.showtabline or 1
+  opts.showtabline = nil
 
   local init = ([[
 vim.opt.rtp:append(%q)
 vim.o.mouse = "a"
 vim.o.swapfile = false
+vim.o.showtabline = %d
 -- 3 como no AstroNvim: com statusline por janela, a barra ganharia uma
 -- statusline separadora e custaria uma linha extra
 vim.o.laststatus = 3
@@ -122,7 +125,7 @@ vim.defer_fn(function()
   dump("ready", { foco_ft = vim.bo.filetype, wins = #vim.api.nvim_list_wins() })
   signal "ready"
 end, 600)
-]]):format(root, dir, session, vim.inspect(opts), vim.inspect(lines))
+]]):format(root, showtabline, dir, session, vim.inspect(opts), vim.inspect(lines))
 
   vim.fn.writefile(vim.split(init, "\n"), dir .. "/init.lua")
   return dir
