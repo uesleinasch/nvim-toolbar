@@ -1,0 +1,64 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+          [ "$(git cat-file -t "refs/tags/$TAG")" = "tag" ] || fail "$TAG não é uma tag anotada."
+
+          commit=$(git rev-list -n1 "$TAG")
+          for branch in "origin/release/$TAG" origin/main; do
+            git rev-parse --verify -q "$branch" >/dev/null || continue
+            git merge-base --is-ancestor "$commit" "$branch" && exit 0
+          done
+          fail "$TAG não pertence a release/$TAG nem a main."
+
+  ci:
+    needs: verify
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: [verify, ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Criar GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          git cliff --latest --strip header > notes.md
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file notes.md --latest
