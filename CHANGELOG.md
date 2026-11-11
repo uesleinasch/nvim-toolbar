@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.1] — 2026-11-11
+
+### Corrigido
+
+- Abrir arquivo pelo neo-tree logo após iniciar não dá mais `E1513` (`winfixbuf`)
+  na janela da barra: sem histórico de janelas, o neo-tree escolhia a barra. A
+  barra agora entra sozinha em `open_files_do_not_replace_types` do neo-tree,
+  sem precisar configurar nada.
+
+### Interno
+
+- Automação GitFlow: validação de branch e título de PR, CodeQL dos workflows,
+  Dependabot de actions e GitHub Release automática a partir de tag anotada.
+
 ## [0.1.0] — 2026-08-05
 
 Primeira versão pública: barra clicável com 6 grupos por intenção e 5 ações
