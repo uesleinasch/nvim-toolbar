@@ -153,6 +153,42 @@ describe("render/window", function()
     assert.equals(1, barras)
   end)
 
+  describe("com neo-tree", function()
+    local original
+
+    before_each(function() original = package.loaded["neo-tree"] end)
+
+    after_each(function() package.loaded["neo-tree"] = original end)
+
+    it("pede ao neo-tree ja configurado que nao abra arquivos na barra", function()
+      package.loaded["neo-tree"] = { config = { open_files_do_not_replace_types = { "terminal" } } }
+
+      window.setup()
+
+      assert.same({ "terminal", "nvimtoolbar" }, package.loaded["neo-tree"].config.open_files_do_not_replace_types)
+    end)
+
+    it("pede tambem quando o neo-tree so e configurado depois da barra", function()
+      package.loaded["neo-tree"] = {}
+      window.setup()
+      package.loaded["neo-tree"].config = {}
+
+      local arvore = vim.api.nvim_create_buf(false, true)
+      vim.bo[arvore].filetype = "neo-tree"
+      vim.api.nvim_buf_delete(arvore, { force = true })
+
+      assert.same({ "nvimtoolbar" }, package.loaded["neo-tree"].config.open_files_do_not_replace_types)
+    end)
+
+    it("nao repete o filetype quando a barra e recriada", function()
+      package.loaded["neo-tree"] = { config = { open_files_do_not_replace_types = { "nvimtoolbar" } } }
+
+      window.setup()
+
+      assert.same({ "nvimtoolbar" }, package.loaded["neo-tree"].config.open_files_do_not_replace_types)
+    end)
+  end)
+
   it("nao rouba o foco ao ser criada", function()
     local antes = vim.api.nvim_get_current_win()
 

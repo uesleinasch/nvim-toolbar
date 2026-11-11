@@ -127,6 +127,20 @@ end
 -- A barra nao e lugar de trabalhar: se o foco cair nela, devolve ao codigo.
 -- VimEnter/UIEnter entram aqui porque a barra e a primeira janela do layout e o
 -- Neovim foca nela ao terminar de iniciar, sem passar por WinEnter.
+-- Sem historico de janelas (neo-tree carregado tarde), o neo-tree escolhe onde
+-- abrir o arquivo com `wincmd w` sob eventignore=all: guard_focus nao roda e a
+-- barra, primeira do layout, e escolhida. O retry dele para winfixbuf nao
+-- salva (3.42 lanca o erro antes). So a lista de filetypes ignorados resolve.
+local function shield_from_neo_tree()
+  local neo_tree = package.loaded["neo-tree"]
+  local cfg = type(neo_tree) == "table" and neo_tree.config
+  if type(cfg) ~= "table" then return end
+  cfg.open_files_do_not_replace_types = cfg.open_files_do_not_replace_types or {}
+  if not vim.tbl_contains(cfg.open_files_do_not_replace_types, "nvimtoolbar") then
+    table.insert(cfg.open_files_do_not_replace_types, "nvimtoolbar")
+  end
+end
+
 local function guard_focus()
   local group = vim.api.nvim_create_augroup("NvimToolbarFocus", { clear = true })
   vim.api.nvim_create_autocmd({ "WinEnter", "VimEnter", "UIEnter", "TabEnter" }, {
@@ -134,6 +148,8 @@ local function guard_focus()
     callback = function() vim.schedule(leave_bar) end,
   })
   vim.api.nvim_create_autocmd("QuitPre", { group = group, callback = quit_bar_when_alone })
+  vim.api.nvim_create_autocmd("FileType", { group = group, pattern = "neo-tree", callback = shield_from_neo_tree })
+  shield_from_neo_tree()
 end
 
 local function make_win()
@@ -158,8 +174,8 @@ local function make_win()
   -- da barra, ele le como a borda inferior dela
   wo.winhighlight = "Normal:ToolbarFill,EndOfBuffer:ToolbarFill,WinSeparator:ToolbarSep"
 
-  -- plugins que procuram "uma janela qualquer" para abrir arquivo (neo-tree,
-  -- pickers) respeitam winfixbuf; sem ele, o arquivo abre dentro da barra
+  -- sem winfixbuf, pickers que procuram "uma janela qualquer" abrem o arquivo
+  -- dentro da barra; nem todos tratam o erro (ver shield_from_neo_tree)
   wo.winfixbuf = true
 
   -- o height do open_win nem sempre e respeitado na criacao do split
